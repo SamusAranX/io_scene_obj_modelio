@@ -138,7 +138,7 @@ def create_materials(filepath, relpath,
 	assign colors and images to the materials from all referenced material libs
 	"""
 	from math import sqrt
-	from bpy_extras import node_shader_utils
+	import node_shader_utils
 
 	DIR = os.path.dirname(filepath)
 	context_material_vars = set()
@@ -187,8 +187,7 @@ def create_materials(filepath, relpath,
 			_generic_tex_set(mat_wrap.base_color_texture, image, 'UV', map_offset, map_scale)
 
 		elif type == 'Ka':
-			# XXX Not supported?
-			print("WARNING, currently unsupported ambient texture, skipped.")
+			_generic_tex_set(mat_wrap.specular_tint_texture, image, 'UV', map_offset, map_scale)
 
 		elif type == 'Ks':
 			_generic_tex_set(mat_wrap.specular_texture, image, 'UV', map_offset, map_scale)
@@ -196,7 +195,7 @@ def create_materials(filepath, relpath,
 		elif type == 'Ke':
 			_generic_tex_set(mat_wrap.emission_color_texture, image, 'UV', map_offset, map_scale)
 
-		elif type == 'Bump':
+		elif type in ["Bump", "tangentSpaceNormal"]:
 			bump_mult = map_options.get(b'-bm')
 			bump_mult = float(bump_mult[0]) if (bump_mult and len(bump_mult[0]) > 1) else 1.0
 			mat_wrap.normalmap_strength_set(bump_mult)
@@ -220,6 +219,39 @@ def create_materials(filepath, relpath,
 
 			_generic_tex_set(mat_wrap.base_color_texture, image, 'Reflection', map_offset, map_scale)
 			mat_wrap.base_color_texture.projection = 'SPHERE'
+
+		# MODEL I/O DIRECTIVES AFTER THIS POINT
+
+		elif type == "ao":  # ao map
+			# Uses IOR texture since Principled BSDF nodes don't have an AO input
+			_generic_tex_set(mat_wrap.ior_texture, image, 'UV', map_offset, map_scale)
+
+		elif type == "subsurface":  # subsurface map
+			_generic_tex_set(mat_wrap.subsurface_texture, image, 'UV', map_offset, map_scale)
+
+		elif type == "metallic":  # metallic map
+			_generic_tex_set(mat_wrap.metallic_texture, image, 'UV', map_offset, map_scale)
+
+		elif type == "specularTint":  # specularTint map
+			_generic_tex_set(mat_wrap.specular_tint_texture, image, 'UV', map_offset, map_scale)
+
+		elif type == "roughness":  # roughness map
+			_generic_tex_set(mat_wrap.roughness_texture, image, 'UV', map_offset, map_scale)
+
+		elif type == "anisotropicRotation":  # anisotropicRotation map
+			_generic_tex_set(mat_wrap.anisotropic_rotation_texture, image, 'UV', map_offset, map_scale)
+
+		elif type == "sheen":  # sheen map
+			_generic_tex_set(mat_wrap.sheen_texture, image, 'UV', map_offset, map_scale)
+
+		elif type == "sheenTint":  # sheenTint map
+			_generic_tex_set(mat_wrap.sheen_tint_texture, image, 'UV', map_offset, map_scale)
+
+		elif type == "clearCoat":  # clearCoat map
+			_generic_tex_set(mat_wrap.clearcoat_texture, image, 'UV', map_offset, map_scale)
+
+		elif type == "clearCoatGloss":  # clearCoatGloss map
+			_generic_tex_set(mat_wrap.clearcoat_roughness_texture, image, 'UV', map_offset, map_scale)
 
 		else:
 			raise Exception("invalid type %r" % type)
@@ -468,6 +500,74 @@ def create_materials(filepath, relpath,
 						if img_data:
 							load_material_image(context_material, context_mat_wrap,
 												context_material_name, img_data, line, 'refl')
+
+					# MODEL I/O DIRECTIVES AFTER THIS POINT
+
+					elif line_id in {b'map_ao', b'ao'}:  # ao map
+						img_data = line.split()[1:]
+						if img_data:
+							load_material_image(context_material, context_mat_wrap,
+												context_material_name, img_data, line, 'ao')
+
+					elif line_id in {b'map_subsurface', b'subsurface'}:  # subsurface map
+						img_data = line.split()[1:]
+						if img_data:
+							load_material_image(context_material, context_mat_wrap,
+												context_material_name, img_data, line, 'subsurface')
+
+					elif line_id in {b'map_metallic', b'metallic'}:  # metallic map
+						img_data = line.split()[1:]
+						if img_data:
+							load_material_image(context_material, context_mat_wrap,
+												context_material_name, img_data, line, 'metallic')
+
+					elif line_id in {b'map_specularTint', b'specularTint'}:  # specularTint map
+						img_data = line.split()[1:]
+						if img_data:
+							load_material_image(context_material, context_mat_wrap,
+												context_material_name, img_data, line, 'specularTint')
+
+					elif line_id in {b'map_roughness', b'roughness'}:  # roughness map
+						img_data = line.split()[1:]
+						if img_data:
+							load_material_image(context_material, context_mat_wrap,
+												context_material_name, img_data, line, 'roughness')
+
+					elif line_id in {b'map_anisotropicRotation', b'anisotropicRotation'}:  # anisotropicRotation map
+						img_data = line.split()[1:]
+						if img_data:
+							load_material_image(context_material, context_mat_wrap,
+												context_material_name, img_data, line, 'anisotropicRotation')
+
+					elif line_id in {b'map_sheen', b'sheen'}:  # sheen map
+						img_data = line.split()[1:]
+						if img_data:
+							load_material_image(context_material, context_mat_wrap,
+												context_material_name, img_data, line, 'sheen')
+
+					elif line_id in {b'map_sheenTint', b'sheenTint'}:  # sheenTint map
+						img_data = line.split()[1:]
+						if img_data:
+							load_material_image(context_material, context_mat_wrap,
+												context_material_name, img_data, line, 'sheenTint')
+
+					elif line_id in {b'map_clearCoat', b'clearCoat'}:  # clearCoat map
+						img_data = line.split()[1:]
+						if img_data:
+							load_material_image(context_material, context_mat_wrap,
+												context_material_name, img_data, line, 'clearCoat')
+
+					elif line_id in {b'map_clearCoatGloss', b'clearCoatGloss'}:  # clearCoatGloss map
+						img_data = line.split()[1:]
+						if img_data:
+							load_material_image(context_material, context_mat_wrap,
+												context_material_name, img_data, line, 'clearCoatGloss')
+
+					elif line_id in {b'map_tangentSpaceNormal', b'tangentSpaceNormal'}:  # tangentSpaceNormal map
+						img_data = line.split()[1:]
+						if img_data:
+							load_material_image(context_material, context_mat_wrap,
+												context_material_name, img_data, line, 'tangentSpaceNormal')
 					else:
 						print("WARNING: %r:%r (ignored)" % (filepath, line))
 
