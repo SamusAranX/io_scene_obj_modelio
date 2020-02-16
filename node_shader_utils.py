@@ -193,6 +193,7 @@ class PrincipledBSDFWrapper(ShaderWrapper):
 			if n.bl_idname == 'ShaderNodeOutputMaterial' and n.inputs[0].is_linked:
 				node_out = n
 				node_principled = n.inputs[0].links[0].from_node
+				node_principled.distribution = "MULTI_GGX"
 			elif n.bl_idname == 'ShaderNodeBsdfPrincipled' and n.outputs[0].is_linked:
 				node_principled = n
 				node_principled.distribution = "MULTI_GGX"
