@@ -21,14 +21,14 @@
 bl_info = {
 	"name": "Wavefront OBJ format (Model I/O)",
 	"author": "Campbell Barton, Bastien Montagne",
-	"version": (3, 8, 0),
+	"version": (4, 0, 0),
 	"blender": (2, 82, 0),
 	"location": "File > Import-Export",
 	"description": "Import-Export OBJ, Import OBJ mesh, UVs, materials and textures",
 	"warning": "",
 	"wiki_url": "https://docs.blender.org/manual/en/dev/addons/"
 				"import_export/io_scene_obj.html",
-	"support": "COMMUNITY",
+	"support": "TESTING",
 	"category": "Import-Export"}
 
 if "bpy" in locals():
