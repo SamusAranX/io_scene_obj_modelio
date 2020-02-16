@@ -438,6 +438,20 @@ class PrincipledBSDFWrapper(ShaderWrapper):
 
 	specular_texture = property(specular_texture_get)
 
+	# Will only be used as gray-scale one...
+	def specular_tint_texture_get(self):
+		if not self.use_nodes or self.node_principled_bsdf is None:
+			print("NO NODES!")
+			return None
+		return ShaderImageTextureWrapper(
+			self, self.node_principled_bsdf,
+			self.node_principled_bsdf.inputs["Specular Tint"],
+			grid_row_diff=0,
+			colorspace_name='Non-Color',
+		)
+
+	specular_tint_texture = property(specular_tint_texture_get)
+
 
 	# --------------------------------------------------------------------
 	# Roughness (also sort of inverse of specular hardness...).

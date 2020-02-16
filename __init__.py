@@ -20,7 +20,7 @@
 
 bl_info = {
 	"name": "Wavefront OBJ format (Model I/O)",
-	"author": "Campbell Barton, Bastien Montagne",
+	"author": "Campbell Barton, Bastien Montagne, Emma Alyx Wunder",
 	"version": (4, 0, 0),
 	"blender": (2, 82, 0),
 	"location": "File > Import-Export",
@@ -469,7 +469,7 @@ class ExportOBJ(bpy.types.Operator, ExportHelper):
 
 
 def menu_func_import(self, context):
-	self.layout.operator(ImportOBJ.bl_idname, text="Wavefront (.obj)")
+	self.layout.operator(ImportOBJ.bl_idname, text="Model I/O (.obj)")
 
 
 def menu_func_export(self, context):
