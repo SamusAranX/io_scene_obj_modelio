@@ -138,7 +138,7 @@ def create_materials(filepath, relpath,
 	assign colors and images to the materials from all referenced material libs
 	"""
 	from math import sqrt
-	import node_shader_utils
+	from . import node_shader_utils
 
 	DIR = os.path.dirname(filepath)
 	context_material_vars = set()
