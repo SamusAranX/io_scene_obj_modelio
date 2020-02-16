@@ -222,10 +222,6 @@ def create_materials(filepath, relpath,
 
 		# MODEL I/O DIRECTIVES AFTER THIS POINT
 
-		elif type == "ao":  # ao map
-			# Uses IOR texture since Principled BSDF nodes don't have an AO input
-			_generic_tex_set(mat_wrap.ior_texture, image, 'UV', map_offset, map_scale)
-
 		elif type == "subsurface":  # subsurface map
 			_generic_tex_set(mat_wrap.subsurface_texture, image, 'UV', map_offset, map_scale)
 
@@ -337,16 +333,16 @@ def create_materials(filepath, relpath,
 			# print('\t\tloading mtl: %e' % mtlpath)
 			context_material = None
 			context_mat_wrap = None
-			mtl = open(mtlpath, 'rb')
+			mtl = open(mtlpath, "rb")
 			for line in mtl:  # .readlines():
 				line = line.strip()
-				if not line or line.startswith(b'#'):
+				if not line or line.startswith(b"#"):
 					continue
 
 				line_split = line.split()
 				line_id = line_split[0].lower()
 
-				if line_id == b'newmtl':
+				if line_id == b"newmtl":
 					# Finalize previous mat, if any.
 					finalize_material(context_material, context_material_vars, spec_colors,
 									  do_highlight, do_reflection, do_transparency, do_glass)
@@ -376,37 +372,35 @@ def create_materials(filepath, relpath,
 							return [float_func(line_split[1]), float_func(line_split[2]), float_func(line_split[3])]
 
 					# we need to make a material to assign properties to it.
-					if line_id == b'ka':
-						refl =  sum(_get_colors(line_split)) / 3.0
-						context_mat_wrap.metallic = refl
-						context_material_vars.add("metallic")
-					elif line_id == b'kd':
+					if line_id == b"ka":
+						context_mat_wrap.specular = float_func(line_split[1])
+					elif line_id == b"kd":
 						context_mat_wrap.base_color = _get_colors(line_split)
-					elif line_id == b'ks':
+					elif line_id == b"ks":
 						spec_colors[:] = _get_colors(line_split)
 						context_material_vars.add("specular")
-					elif line_id == b'ke':
+					elif line_id == b"ke":
 						# We cannot set context_material.emit right now, we need final diffuse color as well for this.
 						# XXX Unsupported currently
 						context_mat_wrap.emission_color = _get_colors(line_split)
-					elif line_id == b'ns':
+					elif line_id == b"ns":
 						# XXX Totally empirical conversion, trying to adapt it
 						#     (from 0.0 - 900.0 OBJ specular exponent range to 1.0 - 0.0 Principled BSDF range)...
 						val = max(0.0, min(900.0, float_func(line_split[1])))
 						context_mat_wrap.roughness = 1.0 - (sqrt(val) / 30)
 						context_material_vars.add("roughness")
-					elif line_id == b'ni':  # Refraction index (between 0.001 and 10).
+					elif line_id == b"ni":  # Refraction index (between 0.001 and 10).
 						context_mat_wrap.ior = float_func(line_split[1])
 						context_material_vars.add("ior")
-					elif line_id == b'd':  # dissolve (transparency)
+					elif line_id == b"d":  # dissolve (transparency)
 						context_mat_wrap.alpha = float_func(line_split[1])
 						context_material_vars.add("alpha")
-					elif line_id == b'tr':  # translucency
+					elif line_id == b"tr":  # translucency
 						print("WARNING, currently unsupported 'tr' translucency option, skipped.")
-					elif line_id == b'tf':
+					elif line_id == b"tf":
 						# rgb, filter color, blender has no support for this.
 						print("WARNING, currently unsupported 'tf' filter color option, skipped.")
-					elif line_id == b'illum':
+					elif line_id == b"illum":
 						# Some MTL files incorrectly use a float for this value, see T60135.
 						illum = any_number_as_int(line_split[1])
 
@@ -458,44 +452,44 @@ def create_materials(filepath, relpath,
 								  "(cast shadows on invisible surfaces), skipped.")
 							pass
 
-					elif line_id == b'map_ka':
+					elif line_id == b"map_ka":
 						img_data = line.split()[1:]
 						if img_data:
 							load_material_image(context_material, context_mat_wrap,
 												context_material_name, img_data, line, 'Ka')
-					elif line_id == b'map_ks':
+					elif line_id == b"map_ks":
 						img_data = line.split()[1:]
 						if img_data:
 							load_material_image(context_material, context_mat_wrap,
 												context_material_name, img_data, line, 'Ks')
-					elif line_id == b'map_kd':
+					elif line_id == b"map_kd":
 						img_data = line.split()[1:]
 						if img_data:
 							load_material_image(context_material, context_mat_wrap,
 												context_material_name, img_data, line, 'Kd')
-					elif line_id == b'map_ke':
+					elif line_id == b"map_ke":
 						img_data = line.split()[1:]
 						if img_data:
 							load_material_image(context_material, context_mat_wrap,
 												context_material_name, img_data, line, 'Ke')
-					elif line_id in {b'map_bump', b'bump'}:  # 'bump' is incorrect but some files use it.
+					elif line_id in {b"map_bump", b"bump"}:  # 'bump' is incorrect but some files use it.
 						img_data = line.split()[1:]
 						if img_data:
 							load_material_image(context_material, context_mat_wrap,
 												context_material_name, img_data, line, 'Bump')
-					elif line_id in {b'map_d', b'map_tr'}:  # Alpha map - Dissolve
+					elif line_id in {b"map_d", b"map_tr"}:  # Alpha map - Dissolve
 						img_data = line.split()[1:]
 						if img_data:
 							load_material_image(context_material, context_mat_wrap,
 												context_material_name, img_data, line, 'D')
 
-					elif line_id in {b'map_disp', b'disp'}:  # displacementmap
+					elif line_id in {b"map_disp", b"disp"}:  # displacementmap
 						img_data = line.split()[1:]
 						if img_data:
 							load_material_image(context_material, context_mat_wrap,
 												context_material_name, img_data, line, 'disp')
 
-					elif line_id in {b'map_refl', b'refl'}:  # reflectionmap
+					elif line_id in {b"map_refl", b"refl"}:  # reflectionmap
 						img_data = line.split()[1:]
 						if img_data:
 							load_material_image(context_material, context_mat_wrap,
@@ -503,67 +497,89 @@ def create_materials(filepath, relpath,
 
 					# MODEL I/O DIRECTIVES AFTER THIS POINT
 
-					elif line_id in {b'map_ao', b'ao'}:  # ao map
-						img_data = line.split()[1:]
-						if img_data:
-							load_material_image(context_material, context_mat_wrap,
-												context_material_name, img_data, line, 'ao')
+					elif line_id == b"subsurface":
+						context_mat_wrap.subsurface = float_func(line_split[1])
 
-					elif line_id in {b'map_subsurface', b'subsurface'}:  # subsurface map
+					elif line_id == b"metallic":
+						context_mat_wrap.metallic = float_func(line_split[1])
+
+					elif line_id == b"speculartint":
+						context_mat_wrap.specular_tint = float_func(line_split[1])
+
+					elif line_id == b"roughness":
+						context_mat_wrap.roughness = float_func(line_split[1])
+
+					elif line_id == b"anisotropicrotation":
+						context_mat_wrap.anisotropic_rotation = float_func(line_split[1])
+
+					elif line_id == b"sheen":
+						context_mat_wrap.sheen = float_func(line_split[1])
+
+					elif line_id == b"sheentint":
+						context_mat_wrap.sheen_tint = float_func(line_split[1])
+
+					elif line_id == b"clearcoat":
+						context_mat_wrap.clearcoat = float_func(line_split[1])
+
+					elif line_id == b"clearcoatgloss":
+						# gloss is roughness inverted
+						context_mat_wrap.clearcoat_roughness = 1.0 - float_func(line_split[1])
+
+					elif line_id == b"map_subsurface":  # subsurface map
 						img_data = line.split()[1:]
 						if img_data:
 							load_material_image(context_material, context_mat_wrap,
 												context_material_name, img_data, line, 'subsurface')
 
-					elif line_id in {b'map_metallic', b'metallic'}:  # metallic map
+					elif line_id == b"map_metallic":  # metallic map
 						img_data = line.split()[1:]
 						if img_data:
 							load_material_image(context_material, context_mat_wrap,
 												context_material_name, img_data, line, 'metallic')
 
-					elif line_id in {b'map_specularTint', b'specularTint'}:  # specularTint map
+					elif line_id == b"map_speculartint":  # specularTint map
 						img_data = line.split()[1:]
 						if img_data:
 							load_material_image(context_material, context_mat_wrap,
 												context_material_name, img_data, line, 'specularTint')
 
-					elif line_id in {b'map_roughness', b'roughness'}:  # roughness map
+					elif line_id == b"map_roughness":  # roughness map
 						img_data = line.split()[1:]
 						if img_data:
 							load_material_image(context_material, context_mat_wrap,
 												context_material_name, img_data, line, 'roughness')
 
-					elif line_id in {b'map_anisotropicRotation', b'anisotropicRotation'}:  # anisotropicRotation map
+					elif line_id == b"map_anisotropicrotation":  # anisotropicRotation map
 						img_data = line.split()[1:]
 						if img_data:
 							load_material_image(context_material, context_mat_wrap,
 												context_material_name, img_data, line, 'anisotropicRotation')
 
-					elif line_id in {b'map_sheen', b'sheen'}:  # sheen map
+					elif line_id == b"map_sheen":  # sheen map
 						img_data = line.split()[1:]
 						if img_data:
 							load_material_image(context_material, context_mat_wrap,
 												context_material_name, img_data, line, 'sheen')
 
-					elif line_id in {b'map_sheenTint', b'sheenTint'}:  # sheenTint map
+					elif line_id == b"map_sheentint":  # sheenTint map
 						img_data = line.split()[1:]
 						if img_data:
 							load_material_image(context_material, context_mat_wrap,
 												context_material_name, img_data, line, 'sheenTint')
 
-					elif line_id in {b'map_clearCoat', b'clearCoat'}:  # clearCoat map
+					elif line_id == b"map_clearcoat":  # clearCoat map
 						img_data = line.split()[1:]
 						if img_data:
 							load_material_image(context_material, context_mat_wrap,
 												context_material_name, img_data, line, 'clearCoat')
 
-					elif line_id in {b'map_clearCoatGloss', b'clearCoatGloss'}:  # clearCoatGloss map
+					elif line_id == b"map_clearcoatgloss":  # clearCoatGloss map
 						img_data = line.split()[1:]
 						if img_data:
 							load_material_image(context_material, context_mat_wrap,
 												context_material_name, img_data, line, 'clearCoatGloss')
 
-					elif line_id in {b'map_tangentSpaceNormal', b'tangentSpaceNormal'}:  # tangentSpaceNormal map
+					elif line_id == b"map_tangentspacenormal":  # tangentSpaceNormal map
 						img_data = line.split()[1:]
 						if img_data:
 							load_material_image(context_material, context_mat_wrap,
