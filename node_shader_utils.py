@@ -195,6 +195,7 @@ class PrincipledBSDFWrapper(ShaderWrapper):
 				node_principled = n.inputs[0].links[0].from_node
 			elif n.bl_idname == 'ShaderNodeBsdfPrincipled' and n.outputs[0].is_linked:
 				node_principled = n
+				node_principled.distribution = "MULTI_GGX"
 				for lnk in n.outputs[0].links:
 					node_out = lnk.to_node
 					if node_out.bl_idname == 'ShaderNodeOutputMaterial':
@@ -221,6 +222,7 @@ class PrincipledBSDFWrapper(ShaderWrapper):
 		elif not self.is_readonly:
 			node_principled = nodes.new(type='ShaderNodeBsdfPrincipled')
 			node_principled.label = "Principled BSDF"
+			node_principled.distribution = "MULTI_GGX"
 			self._grid_to_location(0, 1, dst_node=node_principled)
 			# Link
 			links.new(node_principled.outputs["BSDF"], self.node_out.inputs["Surface"])
@@ -301,15 +303,13 @@ class PrincipledBSDFWrapper(ShaderWrapper):
 	def subsurface_get(self):
 		if not self.use_nodes or self.node_principled_bsdf is None:
 			return 0.0
-		return rgba_to_rgb(self.node_principled_bsdf.inputs["Subsurface"].default_value)
+		return self.node_principled_bsdf.inputs["Subsurface"].default_value
 
 	@_set_check
-	def subsurface_set(self, color):
-		color = values_clamp(color, 0.0, 1.0)
-		color = rgb_to_rgba(color)
-
+	def subsurface_set(self, value):
+		value = values_clamp(value, 0.0, 1.0)
 		if self.use_nodes and self.node_principled_bsdf is not None:
-			self.node_principled_bsdf.inputs["Subsurface"].default_value = color
+			self.node_principled_bsdf.inputs["Subsurface"].default_value = value
 
 	subsurface = property(subsurface_get, subsurface_set)
 
@@ -491,15 +491,13 @@ class PrincipledBSDFWrapper(ShaderWrapper):
 	def anisotropic_get(self):
 		if not self.use_nodes or self.node_principled_bsdf is None:
 			return 0.0
-		return rgba_to_rgb(self.node_principled_bsdf.inputs["Anisotropic"].default_value)
+		return self.node_principled_bsdf.inputs["Anisotropic"].default_value
 
 	@_set_check
-	def anisotropic_set(self, color):
-		color = values_clamp(color, 0.0, 1.0)
-		color = rgb_to_rgba(color)
-
+	def anisotropic_set(self, value):
+		value = values_clamp(value, 0.0, 1.0)
 		if self.use_nodes and self.node_principled_bsdf is not None:
-			self.node_principled_bsdf.inputs["Anisotropic"].default_value = color
+			self.node_principled_bsdf.inputs["Anisotropic"].default_value = value
 
 	anisotropic = property(anisotropic_get, anisotropic_set)
 
@@ -525,15 +523,13 @@ class PrincipledBSDFWrapper(ShaderWrapper):
 	def anisotropic_rotation_get(self):
 		if not self.use_nodes or self.node_principled_bsdf is None:
 			return 0.0
-		return rgba_to_rgb(self.node_principled_bsdf.inputs["Anisotropic Rotation"].default_value)
+		return self.node_principled_bsdf.inputs["Anisotropic Rotation"].default_value
 
 	@_set_check
-	def anisotropic_rotation_set(self, color):
-		color = values_clamp(color, 0.0, 1.0)
-		color = rgb_to_rgba(color)
-
+	def anisotropic_rotation_set(self, value):
+		value = values_clamp(value, 0.0, 1.0)
 		if self.use_nodes and self.node_principled_bsdf is not None:
-			self.node_principled_bsdf.inputs["Anisotropic Rotation"].default_value = color
+			self.node_principled_bsdf.inputs["Anisotropic Rotation"].default_value = value
 
 	anisotropic_rotation = property(anisotropic_rotation_get, anisotropic_rotation_set)
 
@@ -559,15 +555,13 @@ class PrincipledBSDFWrapper(ShaderWrapper):
 	def sheen_get(self):
 		if not self.use_nodes or self.node_principled_bsdf is None:
 			return 0.0
-		return rgba_to_rgb(self.node_principled_bsdf.inputs["Sheen"].default_value)
+		return self.node_principled_bsdf.inputs["Sheen"].default_value
 
 	@_set_check
-	def sheen_set(self, color):
-		color = values_clamp(color, 0.0, 1.0)
-		color = rgb_to_rgba(color)
-
+	def sheen_set(self, value):
+		value = values_clamp(value, 0.0, 1.0)
 		if self.use_nodes and self.node_principled_bsdf is not None:
-			self.node_principled_bsdf.inputs["Sheen"].default_value = color
+			self.node_principled_bsdf.inputs["Sheen"].default_value = value
 
 	sheen = property(sheen_get, sheen_set)
 
@@ -593,15 +587,13 @@ class PrincipledBSDFWrapper(ShaderWrapper):
 	def sheen_tint_get(self):
 		if not self.use_nodes or self.node_principled_bsdf is None:
 			return 0.0
-		return rgba_to_rgb(self.node_principled_bsdf.inputs["Sheen Tint"].default_value)
+		return self.node_principled_bsdf.inputs["Sheen Tint"].default_value
 
 	@_set_check
-	def sheen_tint_set(self, color):
-		color = values_clamp(color, 0.0, 1.0)
-		color = rgb_to_rgba(color)
-
+	def sheen_tint_set(self, value):
+		value = values_clamp(value, 0.0, 1.0)
 		if self.use_nodes and self.node_principled_bsdf is not None:
-			self.node_principled_bsdf.inputs["Sheen Tint"].default_value = color
+			self.node_principled_bsdf.inputs["Sheen Tint"].default_value = value
 
 	sheen_tint = property(sheen_tint_get, sheen_tint_set)
 
@@ -627,15 +619,13 @@ class PrincipledBSDFWrapper(ShaderWrapper):
 	def clearcoat_get(self):
 		if not self.use_nodes or self.node_principled_bsdf is None:
 			return 0.0
-		return rgba_to_rgb(self.node_principled_bsdf.inputs["Clearcoat"].default_value)
+		return self.node_principled_bsdf.inputs["Clearcoat"].default_value
 
 	@_set_check
-	def clearcoat_set(self, color):
-		color = values_clamp(color, 0.0, 1.0)
-		color = rgb_to_rgba(color)
-
+	def clearcoat_set(self, value):
+		value = values_clamp(value, 0.0, 1.0)
 		if self.use_nodes and self.node_principled_bsdf is not None:
-			self.node_principled_bsdf.inputs["Clearcoat"].default_value = color
+			self.node_principled_bsdf.inputs["Clearcoat"].default_value = value
 
 	clearcoat = property(clearcoat_get, clearcoat_set)
 
@@ -661,15 +651,13 @@ class PrincipledBSDFWrapper(ShaderWrapper):
 	def clearcoat_roughness_get(self):
 		if not self.use_nodes or self.node_principled_bsdf is None:
 			return 0.0
-		return rgba_to_rgb(self.node_principled_bsdf.inputs["Clearcoat Roughness"].default_value)
+		return self.node_principled_bsdf.inputs["Clearcoat Roughness"].default_value
 
 	@_set_check
-	def clearcoat_roughness_set(self, color):
-		color = values_clamp(color, 0.0, 1.0)
-		color = rgb_to_rgba(color)
-
+	def clearcoat_roughness_set(self, value):
+		value = values_clamp(value, 0.0, 1.0)
 		if self.use_nodes and self.node_principled_bsdf is not None:
-			self.node_principled_bsdf.inputs["Clearcoat Roughness"].default_value = color
+			self.node_principled_bsdf.inputs["Clearcoat Roughness"].default_value = value
 
 	clearcoat_roughness = property(clearcoat_roughness_get, clearcoat_roughness_set)
 
@@ -961,6 +949,8 @@ class ShaderImageTextureWrapper():
 
 			node_image = tree.nodes.new(type='ShaderNodeTexImage')
 			self.owner_shader._grid_to_location(-1, 0 + self.grid_row_diff, dst_node=node_image, ref_node=self.node_dst)
+
+			node_image.interpolation = "Cubic"
 
 			tree.links.new(node_image.outputs["Alpha" if self.use_alpha else "Color"], self.socket_dst)
 
