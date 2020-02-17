@@ -187,7 +187,7 @@ def create_materials(filepath, relpath,
 			_generic_tex_set(mat_wrap.base_color_texture, image, 'UV', map_offset, map_scale)
 
 		elif type == 'Ka':
-			_generic_tex_set(mat_wrap.specular_tint_texture, image, 'UV', map_offset, map_scale)
+			_generic_tex_set(mat_wrap.emission_color_texture, image, 'UV', map_offset, map_scale)
 
 		elif type == 'Ks':
 			_generic_tex_set(mat_wrap.specular_texture, image, 'UV', map_offset, map_scale)
@@ -373,7 +373,7 @@ def create_materials(filepath, relpath,
 
 					# we need to make a material to assign properties to it.
 					if line_id == b"ka":
-						context_mat_wrap.specular = float_func(line_split[1])
+						context_mat_wrap.emission_color = _get_colors(line_split)
 					elif line_id == b"kd":
 						context_mat_wrap.base_color = _get_colors(line_split)
 					elif line_id == b"ks":
