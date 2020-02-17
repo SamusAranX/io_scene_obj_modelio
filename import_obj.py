@@ -252,55 +252,12 @@ def create_materials(filepath, relpath,
 		else:
 			raise Exception("invalid type %r" % type)
 
-	def finalize_material(context_material, context_material_vars, spec_colors,
-						  do_highlight, do_reflection, do_transparency, do_glass):
+	def finalize_material(context_material, context_material_vars, spec_colors):
 		# Finalize previous mat, if any.
 		if context_material:
 			if "specular" in context_material_vars:
-				# XXX This is highly approximated, not sure whether we can do better...
-				# TODO: Find a way to guesstimate best value from diffuse color...
-				# IDEA: Use standard deviation of both spec and diff colors (i.e. how far away they are
-				#       from some grey), and apply the the proportion between those two as tint factor?
-				spec = sum(spec_colors) / 3.0
-				# ~ spec_var = math.sqrt(sum((c - spec) ** 2 for c in spec_color) / 3.0)
-				# ~ diff = sum(context_mat_wrap.base_color) / 3.0
-				# ~ diff_var = math.sqrt(sum((c - diff) ** 2 for c in context_mat_wrap.base_color) / 3.0)
-				# ~ tint = min(1.0, spec_var / diff_var)
-				context_mat_wrap.specular = spec
+				context_mat_wrap.specular = sum(spec_colors) / 3.0
 				context_mat_wrap.specular_tint = 0.0
-				if "roughness" not in context_material_vars:
-					context_mat_wrap.roughness = 0.0
-
-			# FIXME, how else to use this?
-			if do_highlight:
-				if "specular" not in context_material_vars:
-					context_mat_wrap.specular = 1.0
-				if "roughness" not in context_material_vars:
-					context_mat_wrap.roughness = 0.0
-			else:
-				if "specular" not in context_material_vars:
-					context_mat_wrap.specular = 0.0
-				if "roughness" not in context_material_vars:
-					context_mat_wrap.roughness = 1.0
-
-			if do_reflection:
-				if "metallic" not in context_material_vars:
-					context_mat_wrap.metallic = 1.0
-			else:
-				# since we are (ab)using ambient term for metallic (which can be non-zero)
-				context_mat_wrap.metallic = 0.0
-
-			if do_transparency:
-				if "ior" not in context_material_vars:
-					context_mat_wrap.ior = 1.0
-				if "alpha" not in context_material_vars:
-					context_mat_wrap.alpha = 1.0
-				# EEVEE only
-				context_material.blend_method = 'BLEND'
-
-			if do_glass:
-				if "ior" not in context_material_vars:
-					context_mat_wrap.ior = 1.5
 
 	# Try to find a MTL with the same name as the OBJ if no MTLs are specified.
 	temp_mtl = os.path.splitext((os.path.basename(filepath)))[0] + ".mtl"
@@ -324,10 +281,6 @@ def create_materials(filepath, relpath,
 		else:
 			# Note: with modern Principled BSDF shader, things like ambient, raytrace or fresnel are always 'ON'
 			# (i.e. automatically controlled by other parameters).
-			do_highlight = False
-			do_reflection = False
-			do_transparency = False
-			do_glass = False
 			spec_colors = [0.0, 0.0, 0.0]
 
 			# print('\t\tloading mtl: %e' % mtlpath)
@@ -344,8 +297,7 @@ def create_materials(filepath, relpath,
 
 				if line_id == b"newmtl":
 					# Finalize previous mat, if any.
-					finalize_material(context_material, context_material_vars, spec_colors,
-									  do_highlight, do_reflection, do_transparency, do_glass)
+					finalize_material(context_material, context_material_vars, spec_colors)
 
 					context_material_name = line_value(line_split)
 					context_material = unique_materials.get(context_material_name)
@@ -354,10 +306,6 @@ def create_materials(filepath, relpath,
 					context_material_vars.clear()
 
 					spec_colors[:] = [0.0, 0.0, 0.0]
-					do_highlight = False
-					do_reflection = False
-					do_transparency = False
-					do_glass = False
 
 
 				elif context_material:
@@ -383,75 +331,16 @@ def create_materials(filepath, relpath,
 						# We cannot set context_material.emit right now, we need final diffuse color as well for this.
 						# XXX Unsupported currently
 						context_mat_wrap.emission_color = _get_colors(line_split)
-					elif line_id == b"ns":
-						# XXX Totally empirical conversion, trying to adapt it
-						#     (from 0.0 - 900.0 OBJ specular exponent range to 1.0 - 0.0 Principled BSDF range)...
-						val = max(0.0, min(900.0, float_func(line_split[1])))
-						context_mat_wrap.roughness = 1.0 - (sqrt(val) / 30)
-						context_material_vars.add("roughness")
 					elif line_id == b"ni":  # Refraction index (between 0.001 and 10).
 						context_mat_wrap.ior = float_func(line_split[1])
-						context_material_vars.add("ior")
 					elif line_id == b"d":  # dissolve (transparency)
 						context_mat_wrap.alpha = float_func(line_split[1])
-						context_material_vars.add("alpha")
 					elif line_id == b"tr":  # translucency
 						print("WARNING, currently unsupported 'tr' translucency option, skipped.")
 					elif line_id == b"tf":
 						# rgb, filter color, blender has no support for this.
 						print("WARNING, currently unsupported 'tf' filter color option, skipped.")
-					elif line_id == b"illum":
-						# Some MTL files incorrectly use a float for this value, see T60135.
-						illum = any_number_as_int(line_split[1])
-
-						# inline comments are from the spec, v4.2
-						if illum == 0:
-							# Color on and Ambient off
-							print("WARNING, Principled BSDF shader does not support illumination 0 mode "
-								  "(colors with no ambient), skipped.")
-						elif illum == 1:
-							# Color on and Ambient on
-							pass
-						elif illum == 2:
-							# Highlight on
-							do_highlight = True
-						elif illum == 3:
-							# Reflection on and Ray trace on
-							do_reflection = True
-						elif illum == 4:
-							# Transparency: Glass on
-							# Reflection: Ray trace on
-							do_transparency = True
-							do_reflection = True
-							do_glass = True
-						elif illum == 5:
-							# Reflection: Fresnel on and Ray trace on
-							do_reflection = True
-						elif illum == 6:
-							# Transparency: Refraction on
-							# Reflection: Fresnel off and Ray trace on
-							do_transparency = True
-							do_reflection = True
-						elif illum == 7:
-							# Transparency: Refraction on
-							# Reflection: Fresnel on and Ray trace on
-							do_transparency = True
-							do_reflection = True
-						elif illum == 8:
-							# Reflection on and Ray trace off
-							do_reflection = True
-						elif illum == 9:
-							# Transparency: Glass on
-							# Reflection: Ray trace off
-							do_transparency = True
-							do_reflection = False
-							do_glass = True
-						elif illum == 10:
-							# Casts shadows onto invisible surfaces
-							print("WARNING, Principled BSDF shader does not support illumination 10 mode "
-								  "(cast shadows on invisible surfaces), skipped.")
-							pass
-
+					
 					elif line_id == b"map_ka":
 						img_data = line.split()[1:]
 						if img_data:
@@ -588,8 +477,7 @@ def create_materials(filepath, relpath,
 						print("WARNING: %r:%r (ignored)" % (filepath, line))
 
 			# Finalize last mat, if any.
-			finalize_material(context_material, context_material_vars, spec_colors,
-							  do_highlight, do_reflection, do_transparency, do_glass)
+			finalize_material(context_material, context_material_vars, spec_colors)
 			mtl.close()
 
 
