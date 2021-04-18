@@ -141,7 +141,6 @@ def create_materials(filepath, relpath,
 	from . import node_shader_utils
 
 	DIR = os.path.dirname(filepath)
-	context_material_vars = set()
 
 	# Don't load the same image multiple times
 	context_imagepath_map = {}
@@ -252,13 +251,6 @@ def create_materials(filepath, relpath,
 		else:
 			raise Exception("invalid type %r" % type)
 
-	def finalize_material(context_material, context_material_vars, spec_colors):
-		# Finalize previous mat, if any.
-		if context_material:
-			if "specular" in context_material_vars:
-				context_mat_wrap.specular = sum(spec_colors) / 3.0
-				context_mat_wrap.specular_tint = 0.0
-
 	# Try to find a MTL with the same name as the OBJ if no MTLs are specified.
 	temp_mtl = os.path.splitext((os.path.basename(filepath)))[0] + ".mtl"
 	if os.path.exists(os.path.join(DIR, temp_mtl)):
@@ -281,32 +273,24 @@ def create_materials(filepath, relpath,
 		else:
 			# Note: with modern Principled BSDF shader, things like ambient, raytrace or fresnel are always 'ON'
 			# (i.e. automatically controlled by other parameters).
-			spec_colors = [0.0, 0.0, 0.0]
 
 			# print('\t\tloading mtl: %e' % mtlpath)
 			context_material = None
 			context_mat_wrap = None
-			mtl = open(mtlpath, "rb")
+			mtl = open(mtlpath, 'rb')
 			for line in mtl:  # .readlines():
 				line = line.strip()
-				if not line or line.startswith(b"#"):
+				if not line or line.startswith(b'#'):
 					continue
 
 				line_split = line.split()
 				line_id = line_split[0].lower()
 
-				if line_id == b"newmtl":
-					# Finalize previous mat, if any.
-					finalize_material(context_material, context_material_vars, spec_colors)
-
+				if line_id == b'newmtl':
 					context_material_name = line_value(line_split)
 					context_material = unique_materials.get(context_material_name)
 					if context_material is not None:
 						context_mat_wrap = nodal_material_wrap_map[context_material]
-					context_material_vars.clear()
-
-					spec_colors[:] = [0.0, 0.0, 0.0]
-
 
 				elif context_material:
 					def _get_colors(line_split):
@@ -320,65 +304,71 @@ def create_materials(filepath, relpath,
 							return [float_func(line_split[1]), float_func(line_split[2]), float_func(line_split[3])]
 
 					# we need to make a material to assign properties to it.
-					if line_id == b"ka":
+					if line_id == b'ka':
 						context_mat_wrap.emission_color = _get_colors(line_split)
-					elif line_id == b"kd":
+					elif line_id == b'kd':
 						context_mat_wrap.base_color = _get_colors(line_split)
-					elif line_id == b"ks":
-						spec_colors[:] = _get_colors(line_split)
-						context_material_vars.add("specular")
-					elif line_id == b"ke":
+					elif line_id == b'ks':
+						context_mat_wrap.specular = float_func(line_split[1])
+					elif line_id == b'ke':
 						# We cannot set context_material.emit right now, we need final diffuse color as well for this.
 						# XXX Unsupported currently
 						context_mat_wrap.emission_color = _get_colors(line_split)
-					elif line_id == b"ni":  # Refraction index (between 0.001 and 10).
+						context_mat_wrap.emission_strength = 1.0
+					elif line_id == b'ns':
+						# XXX Totally empirical conversion, trying to adapt it
+						#     (from 0.0 - 900.0 OBJ specular exponent range to 1.0 - 0.0 Principled BSDF range)...
+						val = max(0.0, min(900.0, float_func(line_split[1])))
+						context_mat_wrap.roughness = 1.0 - (sqrt(val) / 30)
+					elif line_id == b'ni':  # Refraction index (between 0.001 and 10).
 						context_mat_wrap.ior = float_func(line_split[1])
-					elif line_id == b"d":  # dissolve (transparency)
+					elif line_id == b'd':  # dissolve (transparency)
 						context_mat_wrap.alpha = float_func(line_split[1])
-					elif line_id == b"tr":  # translucency
+					elif line_id == b'tr':  # translucency
 						print("WARNING, currently unsupported 'tr' translucency option, skipped.")
-					elif line_id == b"tf":
+					elif line_id == b'tf':
 						# rgb, filter color, blender has no support for this.
 						print("WARNING, currently unsupported 'tf' filter color option, skipped.")
-					
-					elif line_id == b"map_ka":
+
+					# there used to be a branch for "illum" here. it's not needed for model i/o
+					elif line_id == b'map_ka':
 						img_data = line.split()[1:]
 						if img_data:
 							load_material_image(context_material, context_mat_wrap,
 												context_material_name, img_data, line, 'Ka')
-					elif line_id == b"map_ks":
+					elif line_id == b'map_ks':
 						img_data = line.split()[1:]
 						if img_data:
 							load_material_image(context_material, context_mat_wrap,
 												context_material_name, img_data, line, 'Ks')
-					elif line_id == b"map_kd":
+					elif line_id == b'map_kd':
 						img_data = line.split()[1:]
 						if img_data:
 							load_material_image(context_material, context_mat_wrap,
 												context_material_name, img_data, line, 'Kd')
-					elif line_id == b"map_ke":
+					elif line_id == b'map_ke':
 						img_data = line.split()[1:]
 						if img_data:
 							load_material_image(context_material, context_mat_wrap,
 												context_material_name, img_data, line, 'Ke')
-					elif line_id in {b"map_bump", b"bump"}:  # 'bump' is incorrect but some files use it.
+					elif line_id in {b'map_bump', b'bump'}:  # 'bump' is incorrect but some files use it.
 						img_data = line.split()[1:]
 						if img_data:
 							load_material_image(context_material, context_mat_wrap,
 												context_material_name, img_data, line, 'Bump')
-					elif line_id in {b"map_d", b"map_tr"}:  # Alpha map - Dissolve
+					elif line_id in {b'map_d', b'map_tr'}:  # Alpha map - Dissolve
 						img_data = line.split()[1:]
 						if img_data:
 							load_material_image(context_material, context_mat_wrap,
 												context_material_name, img_data, line, 'D')
 
-					elif line_id in {b"map_disp", b"disp"}:  # displacementmap
+					elif line_id in {b'map_disp', b'disp'}:  # displacementmap
 						img_data = line.split()[1:]
 						if img_data:
 							load_material_image(context_material, context_mat_wrap,
 												context_material_name, img_data, line, 'disp')
 
-					elif line_id in {b"map_refl", b"refl"}:  # reflectionmap
+					elif line_id in {b'map_refl', b'refl'}:  # reflectionmap
 						img_data = line.split()[1:]
 						if img_data:
 							load_material_image(context_material, context_mat_wrap,
@@ -476,8 +466,6 @@ def create_materials(filepath, relpath,
 					else:
 						print("WARNING: %r:%r (ignored)" % (filepath, line))
 
-			# Finalize last mat, if any.
-			finalize_material(context_material, context_material_vars, spec_colors)
 			mtl.close()
 
 
@@ -907,7 +895,7 @@ def any_number_as_int(svalue):
 def load(context,
 		 filepath,
 		 *,
-		 global_clight_size=0.0,
+		 global_clamp_size=0.0,
 		 use_smooth_groups=True,
 		 use_edges=True,
 		 use_split_objects=True,
@@ -1026,6 +1014,10 @@ def load(context,
 					continue
 
 				line_start = line_split[0]  # we compare with this a _lot_
+
+				if len(line_split) == 1 and not context_multi_line and line_start != b'end':
+					print("WARNING, skipping malformatted line: %s" % line.decode('UTF-8', 'replace').rstrip())
+					continue
 
 				# Handling vertex data are pretty similar, factorize that.
 				# Also, most OBJ files store all those on a single line, so try fast parsing for that first,
@@ -1295,7 +1287,7 @@ def load(context,
 		axis_min = [1000000000] * 3
 		axis_max = [-1000000000] * 3
 
-		if global_clight_size:
+		if global_clamp_size:
 			# Get all object bounds
 			for ob in new_objects:
 				for v in ob.bound_box:
@@ -1309,7 +1301,7 @@ def load(context,
 			max_axis = max(axis_max[0] - axis_min[0], axis_max[1] - axis_min[1], axis_max[2] - axis_min[2])
 			scale = 1.0
 
-			while global_clight_size < max_axis * scale:
+			while global_clamp_size < max_axis * scale:
 				scale = scale / 10.0
 
 			for obj in new_objects:
