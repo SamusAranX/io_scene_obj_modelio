@@ -931,7 +931,10 @@ class ShaderImageTextureWrapper():
 			tree = self.owner_shader.material.node_tree
 
 			node_image = tree.nodes.new(type='ShaderNodeTexImage')
-			self.owner_shader._grid_to_location(-1, 0 + self.grid_row_diff, dst_node=node_image, ref_node=self.node_dst)
+			self.owner_shader._grid_to_location(
+				-1, 0 + self.grid_row_diff,
+				dst_node=node_image, ref_node=self.node_dst,
+			)
 
 			node_image.interpolation = "Cubic"
 			tree.links.new(node_image.outputs["Alpha" if self.use_alpha else "Color"], self.socket_dst)

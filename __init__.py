@@ -21,8 +21,8 @@
 bl_info = {
 	"name": "Wavefront OBJ format (Model I/O)",
 	"author": "Campbell Barton, Bastien Montagne, Emma Alyx Wunder",
-	"version": (3, 8, 1),
-	"blender": (2, 81, 6),
+	"version": (3, 9, 0),
+	"blender": (3, 0, 0),
 	"location": "File > Import",
 	"description": "Import Model I/O-generated OBJ mesh, UVs, materials, and textures",
 	"warning": "",
@@ -126,15 +126,19 @@ class ImportOBJ(bpy.types.Operator, ImportHelper):
 		else:
 			self.use_groups_as_vgroups = False
 
-		keywords = self.as_keywords(ignore=("axis_forward",
-											"axis_up",
-											"filter_glob",
-											"split_mode",
-											))
+		keywords = self.as_keywords(
+			ignore=(
+				"axis_forward",
+				"axis_up",
+				"filter_glob",
+				"split_mode",
+			),
+		)
 
-		global_matrix = axis_conversion(from_forward=self.axis_forward,
-										from_up=self.axis_up,
-										).to_4x4()
+		global_matrix = axis_conversion(
+			from_forward=self.axis_forward,
+			from_up=self.axis_up,
+		).to_4x4()
 		keywords["global_matrix"] = global_matrix
 
 		if bpy.data.is_saved and context.preferences.filepaths.use_relative_paths:
