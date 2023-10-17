@@ -1,28 +1,10 @@
-# ##### BEGIN GPL LICENSE BLOCK #####
-#
-#  This program is free software; you can redistribute it and/or
-#  modify it under the terms of the GNU General Public License
-#  as published by the Free Software Foundation; either version 2
-#  of the License, or (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software Foundation,
-#  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-#
-# ##### END GPL LICENSE BLOCK #####
-
-# <pep8 compliant>
+# SPDX-License-Identifier: GPL-2.0-or-later
 
 # Script copyright (C) Campbell Barton
 # Contributors: Campbell Barton, Jiri Hnidek, Paolo Ciccone
 
 """
-This script imports a Wavefront OBJ files to Blender.
+This script imports Wavefront OBJ files to Blender.
 
 Usage:
 Run this script from "File->Import" menu and then load the desired OBJ file.
@@ -592,7 +574,7 @@ def create_mesh(new_objects,
 		len_face_vert_loc_indices = len(face_vert_loc_indices)
 
 		if len_face_vert_loc_indices == 1:
-			faces.pop(f_idx)  # cant add single vert faces
+			faces.pop(f_idx)  # can't add single vert faces
 
 		# Face with a single item in face_vert_nor_indices is actually a polyline!
 		elif face_is_edge(face):
@@ -679,7 +661,7 @@ def create_mesh(new_objects,
 
 	me = bpy.data.meshes.new(dataname)
 
-	# make sure the list isnt too big
+	# make sure the list isn't too big
 	for material in materials:
 		me.materials.append(material)
 
@@ -987,7 +969,7 @@ def load(context,
 
 		# when there are faces that end with \
 		# it means they are multiline-
-		# since we use xreadline we cant skip to the next line
+		# since we use xreadline we can't skip to the next line
 		# so we need to know whether
 		context_multi_line = b''
 

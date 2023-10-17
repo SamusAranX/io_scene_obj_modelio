@@ -1,33 +1,15 @@
-# ##### BEGIN GPL LICENSE BLOCK #####
-#
-#  This program is free software; you can redistribute it and/or
-#  modify it under the terms of the GNU General Public License
-#  as published by the Free Software Foundation; either version 2
-#  of the License, or (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software Foundation,
-#  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-#
-# ##### END GPL LICENSE BLOCK #####
-
-# <pep8-80 compliant>
+# SPDX-License-Identifier: GPL-2.0-or-later
 
 bl_info = {
-	"name": "Wavefront OBJ format (Model I/O)",
+	"name": "Model I/O OBJ format",
 	"author": "Campbell Barton, Bastien Montagne, Emma Alyx Wunder",
 	"version": (3, 9, 0),
 	"blender": (3, 0, 0),
 	"location": "File > Import",
 	"description": "Import Model I/O-generated OBJ mesh, UVs, materials, and textures",
 	"warning": "",
-	"doc_url": "{BLENDER_MANUAL_URL}/addons/import_export/scene_obj.html",
-	"support": 'COMMUNITY',
+	"doc_url": "https://github.com/SamusAranX/io_scene_obj_modelio",
+	"support": "COMMUNITY",
 	"category": "Import-Export",
 }
 
@@ -39,17 +21,17 @@ if "bpy" in locals():
 
 import bpy
 from bpy.props import (
-		BoolProperty,
-		FloatProperty,
-		StringProperty,
-		EnumProperty,
-		)
+	BoolProperty,
+	FloatProperty,
+	StringProperty,
+	EnumProperty,
+)
 from bpy_extras.io_utils import (
-		ImportHelper,
-		orientation_helper,
-		path_reference_mode,
-		axis_conversion,
-		)
+	ImportHelper,
+	orientation_helper,
+	path_reference_mode,
+	axis_conversion,
+)
 
 
 @orientation_helper(axis_forward='-Z', axis_up='Y')
