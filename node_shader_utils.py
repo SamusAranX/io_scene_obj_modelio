@@ -294,13 +294,13 @@ class PrincipledBSDFWrapper(ShaderWrapper):
 	def subsurface_get(self):
 		if not self.use_nodes or self.node_principled_bsdf is None:
 			return 0.0
-		return self.node_principled_bsdf.inputs["Subsurface"].default_value
+		return self.node_principled_bsdf.inputs["Subsurface Weight"].default_value
 
 	@_set_check
 	def subsurface_set(self, value):
 		value = values_clamp(value, 0.0, 1.0)
 		if self.use_nodes and self.node_principled_bsdf is not None:
-			self.node_principled_bsdf.inputs["Subsurface"].default_value = value
+			self.node_principled_bsdf.inputs["Subsurface Weight"].default_value = value
 
 	subsurface = property(subsurface_get, subsurface_set)
 
@@ -311,7 +311,7 @@ class PrincipledBSDFWrapper(ShaderWrapper):
 			return None
 		return ShaderImageTextureWrapper(
 			self, self.node_principled_bsdf,
-			self.node_principled_bsdf.inputs["Subsurface"],
+			self.node_principled_bsdf.inputs["Subsurface Weight"],
 			grid_row_diff=0,
 			colorspace_name='Non-Color',
 		)
@@ -324,7 +324,7 @@ class PrincipledBSDFWrapper(ShaderWrapper):
 	def subsurface_color_get(self):
 		if not self.use_nodes or self.node_principled_bsdf is None:
 			return (0,0,0,0)
-		return rgba_to_rgb(self.node_principled_bsdf.inputs["Subsurface Color"].default_value)
+		return rgba_to_rgb(self.node_principled_bsdf.inputs["Subsurface Radius"].default_value)
 
 	@_set_check
 	def subsurface_color_set(self, color):
@@ -332,7 +332,7 @@ class PrincipledBSDFWrapper(ShaderWrapper):
 		color = rgb_to_rgba(color)
 
 		if self.use_nodes and self.node_principled_bsdf is not None:
-			self.node_principled_bsdf.inputs["Subsurface Color"].default_value = color
+			self.node_principled_bsdf.inputs["Subsurface Radius"].default_value = color
 
 	subsurface_color = property(subsurface_color_get, subsurface_color_set)
 
@@ -341,7 +341,7 @@ class PrincipledBSDFWrapper(ShaderWrapper):
 			return None
 		return ShaderImageTextureWrapper(
 			self, self.node_principled_bsdf,
-			self.node_principled_bsdf.inputs["Subsurface Color"],
+			self.node_principled_bsdf.inputs["Subsurface Radius"],
 			grid_row_diff=1,
 		)
 
@@ -383,14 +383,14 @@ class PrincipledBSDFWrapper(ShaderWrapper):
 	def specular_get(self):
 		if not self.use_nodes or self.node_principled_bsdf is None:
 			return self.material.specular_intensity
-		return self.node_principled_bsdf.inputs["Specular"].default_value
+		return self.node_principled_bsdf.inputs["Specular IOR Level"].default_value
 
 	@_set_check
 	def specular_set(self, value):
 		value = values_clamp(value, 0.0, 1.0)
 		self.material.specular_intensity = value
 		if self.use_nodes and self.node_principled_bsdf is not None:
-			self.node_principled_bsdf.inputs["Specular"].default_value = value
+			self.node_principled_bsdf.inputs["Specular IOR Level"].default_value = value
 
 	specular = property(specular_get, specular_set)
 
@@ -414,7 +414,7 @@ class PrincipledBSDFWrapper(ShaderWrapper):
 			return None
 		return ShaderImageTextureWrapper(
 			self, self.node_principled_bsdf,
-			self.node_principled_bsdf.inputs["Specular"],
+			self.node_principled_bsdf.inputs["Specular IOR Level"],
 			grid_row_diff=0,
 			colorspace_name='Non-Color',
 		)
@@ -532,13 +532,13 @@ class PrincipledBSDFWrapper(ShaderWrapper):
 	def sheen_get(self):
 		if not self.use_nodes or self.node_principled_bsdf is None:
 			return 0.0
-		return self.node_principled_bsdf.inputs["Sheen"].default_value
+		return self.node_principled_bsdf.inputs["Sheen Weight"].default_value
 
 	@_set_check
 	def sheen_set(self, value):
 		value = values_clamp(value, 0.0, 1.0)
 		if self.use_nodes and self.node_principled_bsdf is not None:
-			self.node_principled_bsdf.inputs["Sheen"].default_value = value
+			self.node_principled_bsdf.inputs["Sheen Weight"].default_value = value
 
 	sheen = property(sheen_get, sheen_set)
 
@@ -549,7 +549,7 @@ class PrincipledBSDFWrapper(ShaderWrapper):
 			return None
 		return ShaderImageTextureWrapper(
 			self, self.node_principled_bsdf,
-			self.node_principled_bsdf.inputs["Sheen"],
+			self.node_principled_bsdf.inputs["Sheen Weight"],
 			grid_row_diff=0,
 			colorspace_name='Non-Color',
 		)
@@ -592,13 +592,13 @@ class PrincipledBSDFWrapper(ShaderWrapper):
 	def clearcoat_get(self):
 		if not self.use_nodes or self.node_principled_bsdf is None:
 			return 0.0
-		return self.node_principled_bsdf.inputs["Clearcoat"].default_value
+		return self.node_principled_bsdf.inputs["Coat Weight"].default_value
 
 	@_set_check
 	def clearcoat_set(self, value):
 		value = values_clamp(value, 0.0, 1.0)
 		if self.use_nodes and self.node_principled_bsdf is not None:
-			self.node_principled_bsdf.inputs["Clearcoat"].default_value = value
+			self.node_principled_bsdf.inputs["Coat Weight"].default_value = value
 
 	clearcoat = property(clearcoat_get, clearcoat_set)
 
@@ -609,7 +609,7 @@ class PrincipledBSDFWrapper(ShaderWrapper):
 			return None
 		return ShaderImageTextureWrapper(
 			self, self.node_principled_bsdf,
-			self.node_principled_bsdf.inputs["Clearcoat"],
+			self.node_principled_bsdf.inputs["Coat Weight"],
 			grid_row_diff=0,
 			colorspace_name='Non-Color',
 		)
@@ -622,13 +622,13 @@ class PrincipledBSDFWrapper(ShaderWrapper):
 	def clearcoat_roughness_get(self):
 		if not self.use_nodes or self.node_principled_bsdf is None:
 			return 0.0
-		return self.node_principled_bsdf.inputs["Clearcoat Roughness"].default_value
+		return self.node_principled_bsdf.inputs["Coat Roughness"].default_value
 
 	@_set_check
 	def clearcoat_roughness_set(self, value):
 		value = values_clamp(value, 0.0, 1.0)
 		if self.use_nodes and self.node_principled_bsdf is not None:
-			self.node_principled_bsdf.inputs["Clearcoat Roughness"].default_value = value
+			self.node_principled_bsdf.inputs["Coat Roughness"].default_value = value
 
 	clearcoat_roughness = property(clearcoat_roughness_get, clearcoat_roughness_set)
 
@@ -639,7 +639,7 @@ class PrincipledBSDFWrapper(ShaderWrapper):
 			return None
 		return ShaderImageTextureWrapper(
 			self, self.node_principled_bsdf,
-			self.node_principled_bsdf.inputs["Clearcoat Roughness"],
+			self.node_principled_bsdf.inputs["Coat Roughness"],
 			grid_row_diff=0,
 			colorspace_name='Non-Color',
 		)
@@ -678,13 +678,13 @@ class PrincipledBSDFWrapper(ShaderWrapper):
 	def transmission_get(self):
 		if not self.use_nodes or self.node_principled_bsdf is None:
 			return 0.0
-		return self.node_principled_bsdf.inputs["Transmission"].default_value
+		return self.node_principled_bsdf.inputs["Transmission Weight"].default_value
 
 	@_set_check
 	def transmission_set(self, value):
 		value = values_clamp(value, 0.0, 1.0)
 		if self.use_nodes and self.node_principled_bsdf is not None:
-			self.node_principled_bsdf.inputs["Transmission"].default_value = value
+			self.node_principled_bsdf.inputs["Transmission Weight"].default_value = value
 
 	transmission = property(transmission_get, transmission_set)
 
@@ -694,7 +694,7 @@ class PrincipledBSDFWrapper(ShaderWrapper):
 			return None
 		return ShaderImageTextureWrapper(
 			self, self.node_principled_bsdf,
-			self.node_principled_bsdf.inputs["Transmission"],
+			self.node_principled_bsdf.inputs["Transmission Weight"],
 			grid_row_diff=-1,
 			colorspace_name='Non-Color',
 		)
@@ -734,14 +734,14 @@ class PrincipledBSDFWrapper(ShaderWrapper):
 	def emission_color_get(self):
 		if not self.use_nodes or self.node_principled_bsdf is None:
 			return Color((0.0, 0.0, 0.0))
-		return rgba_to_rgb(self.node_principled_bsdf.inputs["Emission"].default_value)
+		return rgba_to_rgb(self.node_principled_bsdf.inputs["Emission Color"].default_value)
 
 	@_set_check
 	def emission_color_set(self, color):
 		if self.use_nodes and self.node_principled_bsdf is not None:
 			color = values_clamp(color, 0.0, 1000000.0)
 			color = rgb_to_rgba(color)
-			self.node_principled_bsdf.inputs["Emission"].default_value = color
+			self.node_principled_bsdf.inputs["Emission Color"].default_value = color
 
 	emission_color = property(emission_color_get, emission_color_set)
 
@@ -750,7 +750,7 @@ class PrincipledBSDFWrapper(ShaderWrapper):
 			return None
 		return ShaderImageTextureWrapper(
 			self, self.node_principled_bsdf,
-			self.node_principled_bsdf.inputs["Emission"],
+			self.node_principled_bsdf.inputs["Emission Color"],
 			grid_row_diff=1,
 		)
 
