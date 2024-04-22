@@ -695,7 +695,6 @@ def create_mesh(new_objects,
 	if verts_nor and me.loops:
 		# Note: we store 'temp' normals in loops, since validate() may alter final mesh,
 		#       we can only set custom lnors *after* calling it.
-		me.create_normals_split()
 		loops_nor = tuple(no for (_, face_vert_nor_indices, _, _, _, _, _) in faces
 							 for face_noidx in face_vert_nor_indices
 							 for no in verts_nor[face_noidx])
@@ -751,7 +750,6 @@ def create_mesh(new_objects,
 			me.polygons.foreach_set("use_smooth", [True] * len(me.polygons))
 
 		me.normals_split_custom_set(tuple(zip(*(iter(clnors),) * 3)))
-		me.use_auto_smooth = True
 
 	ob = bpy.data.objects.new(me.name, me)
 	new_objects.append(ob)

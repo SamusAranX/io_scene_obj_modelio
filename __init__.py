@@ -3,8 +3,8 @@
 bl_info = {
 	"name": "Model I/O OBJ format",
 	"author": "Campbell Barton, Bastien Montagne, Emma Alyx Wunder",
-	"version": (4, 0, 0),
-	"blender": (4, 0, 0),
+	"version": (4, 1, 0),
+	"blender": (4, 1, 0),
 	"location": "File > Import",
 	"description": "Import Model I/O-generated OBJ mesh, UVs, materials, and textures",
 	"warning": "",
